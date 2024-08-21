@@ -243,3 +243,23 @@ ELBO를 기반으로 정의된 손실함수는 다음과 같이 3개의 항으�
 - 따라서 첫번째 항은 항상 0에 가까운 상수이며, 학습과정에서 무시된다.
 - 마지막 항은 두 개의 정규분포간 KL Divergence를 계산하는 것이고, VAE에서 봤던 것처럼 두 개의 정규분포에 대한 KLD는 계산 방법이 정해져 있으므로 상수취급한다.
 
+<img src="{{site.url}}/images/240820/0027.png" width="1200" height="300">
+
+논문에서는 Simplifed Loss라고 해서 $ \epsilon - \epsilon_\theta ( \sqrt{\alpha^\hbar_t}x_0 + \sqrt{1-\alpha^\hbar_t}\epsilon)$로 정의하고 있다.
+
+## 4-2.DDIM
+
+앞서 본 DPM, DDPM은 Markov Chain에 의해 Sequential한 절차를 수행해야만 했고 그에 따라 학습과 추론 속도가 매우 느리다. 
+
+DDIM은 Markov Chain을 제거해 T=1000보다 더 작은 스텝으로 학습, 생성을 가능하게 하는 것이 목적이다.
+
+<img src="{{site.url}}/images/240820/0028.png" width="1200" height="300">
+- 식 1, 2, 3은 모두 논문에서 정의한 식으로 따로 유도 과정을 공부하지 않았고, 의미를 이해하고자 했다.
+- 식 1에서는 $ q_\simga $라는 확률이 조건으로 $x_0$를 활용하고 있음을 볼 수 있다. 이는 markov chain을 사용하지 않고 forward, reverse를 수행하고자 함을 표상한다.
+- 여기서 $ \sigma $는 forward 단계에서 얼마나 stochastic한지를 통제하는 변수로 0에 가까울수록 $ x_{t-1} $이 고정되는, Deterministic하게 된다. 즉, 노이즈가 더해지지 않는다.
+- 이 때 식 1은 2에 나온 두 가지 식을 만족하게 되는데 그에 대한 전제 조건은 reverse conditional distribution의 Mean이 식 3과 같아야한다.
+
+<img src="{{site.url}}/images/240820/0029.png" width="1200" height="300">
+핵심은 $ x_{t-1} $ 을 예측할 때 $ x_t, x_0$ 가 필요한데 reverse 단계에서는 $x_0$를 모르니 $ x_t $를 활용한다는 것이다. 앞서 DDPM의 개선된 forward는 $ x_t $로부터 $ x_0 $를 구했는데 우리는 더이상 markov chain을 사용하지 않기 때문에 시점 $ t $에 적용되는 노이즈 $ \epsilon_\theta^t $를 예측하는 방식으로 $ x_0 $를 예측한다.
+
+<img src="{{site.url}}/images/240820/0030.png" width="1200" height="300">
