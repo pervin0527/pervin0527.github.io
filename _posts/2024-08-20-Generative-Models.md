@@ -43,9 +43,9 @@ use_math: true
 1. 데이터를 잘 압축(compress, encoding)하게 되면 불필요한 정보는 제거하고 필수 정보들만 남겨놓게 되어 연산 크기를 줄이는 효과가 있다.
 2. 사람은 3차원을 넘어가는 공간을 시각적으로 표현하는데 굉장히 어려운데, 압축이 잘되어 2차원, 3차원 공간으로 줄여버리고 공간에 투영하면 시각화 자료를 완성할 수 있고 이를 이용해 설명할 수 있다.(explainable)
 3. ```차원의 저주```를 피할 수 있다.
-    - 우리가 현실에 사용하는 이미지는 HD, FHD 이상을 가볍게 넘어가버리기 때문에 전체 공간의 차원은 굉장히 큰 공간이라 할 수 있다. 
-    - 문제는 차원의 증가에 따라 공간이 커지더라도 결국 각각의 이미지는 공간내 점이기 때문에 공간상 점들의 밀도가 낮아 모델 입장에서는 학습할 내용에 비해 양이 작은 상태가 되므로 많은 양의 데이터를 확보가 필수적이다.
-    - manifold를 잘 찾으면 불필요한 차원을 배제하는 효과가 있어 전체공간보다 밀도가 높아지므로 결국 적은 데이터로도 좋은 성능의 모델을 만들 수 있다.
+  - 우리가 현실에 사용하는 이미지는 HD, FHD 이상을 가볍게 넘어가버리기 때문에 전체 공간의 차원은 굉장히 큰 공간이라 할 수 있다. 
+  - 문제는 차원의 증가에 따라 공간이 커지더라도 결국 각각의 이미지는 공간내 점이기 때문에 공간상 점들의 밀도가 낮아 모델 입장에서는 학습할 내용에 비해 양이 작은 상태가 되므로 많은 양의 데이터를 확보가 필수적이다.
+  - manifold를 잘 찾으면 불필요한 차원을 배제하는 효과가 있어 전체공간보다 밀도가 높아지므로 결국 적은 데이터로도 좋은 성능의 모델을 만들 수 있다.
 
 <img src="{{site.url}}/images/240820/0003.jpg" width="1200" height="300">
 
@@ -61,7 +61,7 @@ Likelihood(가능도)의 정의는 **주어진 데이터나 관찰된 결과가 
 
 무슨 말인지 이해하기 어려울텐데 쉽게 말하면 관측치(데이터)가 주어지면 특정 파라미터 $\theta$를 갖는 모델에서 관측될 확률이 가능도이다.
 
-<img src="{{site.url}}/images/240820/0004.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0006.png" width="1200" height="300">
 
 예를 들어 앞면과 뒷면이 나올 확률이 동일한 동전을 10번 던졌을 때 앞면이 7번 나왔을 때,
 - 모델(특정한 모형이나 가정) : 앞면과 뒷면이 나올 확률이 동일하다.
@@ -75,16 +75,18 @@ Likelihood(가능도)의 정의는 **주어진 데이터나 관찰된 결과가 
 
 가능도에 대해 이해했다면 최대 가능도 추정법에 대해 이해할 수 있다.
 
-<img src="{{site.url}}/images/240820/0005.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0006-1.png" width="1200" height="300">
 
 결국 우리가 만드는 DNN은 입력에 따른 출력을 반환하는 함수이며 출력의 형태는 우리가 함수를 어떻게 정의하는가에 따라 달라진다. 
 - 함수의 정의는 우리가 풀고자하는 문제에 해당하니 회귀 문제를 풀어야 한다면 연속적인 값을, 분류 문제를 풀어야 한다면 확률을 반환한다.
 - 또한 본 적 없는 데이터가 입력되더라도 정확한 예측을 해야하고, 출력에 대한 신뢰도가 높을수록 강건한 모델이라 할 수 있다.
+- 이를 Supervised Learning 기준에서 해석해보면, 입력 데이터 $ x $가 주어졌을 때 정해진 정답 $ y $를 출력할 확률 $ p(y \mid x) $을 최대화하는 것이 모델의 목적이자 Maximum Likelihood Estimation과 같다. 
+- 즉, 최대 가능도 추정법은 우리가 가정한 모델에서 단순한 확률이나 조건부 확률을 최대화하는 파라미터 $ \theta $를 추정하는 것이다.
 
-<img src="{{site.url}}/images/240820/0006.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0006-2.png" width="1200" height="300">
 
-이를 Supervised Learning 기준에서 해석해보면, 입력 데이터 $ x $가 주어졌을 때 정해진 정답 $y$를 출력할 확률 $ p(y|x) $을 최대화하는 것이 모델의 목적이자 Maximum Likelihood Estimation과 같다. 
-즉, 최대 가능도 추정법은 우리가 가정한 모델에서 단순한 확률이나 조건부 확률을 최대화하는 파라미터 $ \theta $를 추정하는 것이다.
+참고로 두 분포를 유사한 정도를 계산하는 지표가 KL-Divergence이며, KL Divergence를 최소화하는 것이 Maximum Likelihood를 최대화 하는 것과 같다.
+
 
 # 2.AutoEncoder
 
@@ -129,17 +131,19 @@ encoder로 이상적인 분포 $p_{data}$와 근사하는 분포를 추정하는
 
 ### 2-4.Evidence of Lower BOund(ELBO)
 
-<img src="{{site.url}}/images/240820/0011.jpg" width="1200" height="300">
+
+<img src="{{site.url}}/images/240820/0011.png" width="1200" height="300">
 이러한 문제를 해결하기 위해 이상적인 분포(그림에서 True Posterior로 표기) $p(z|x)$의 하한에 근사하는 분포를 추정한다.
+
+<img src="{{site.url}}/images/240820/0011-1.png" width="1200" height="300">
 
 - q : 우리가 가정하는 분포로 정규분포와 같이 샘플링하기 쉬운 것을 설정.
 - $\emptyset$ : 가정한 분포의 평균(혹은 평균과 분산)으로 이를 조절하면서 True Posterior와 유사한 분포를 추정하는 variance inference를 수행.
-- True posterior를 알 수 없기 때문에 세번째 항을 제거하게 되고, 그에 따라 부등식으로 바뀌게된다. 즉, 이상적인 분포를 모르더라도 Lower Bound가 posterior와 같거나 하한선이겠지.
-- KL Divergence는 두 분포가 얼마나 유사한가를 계산하는 것으로 거리는 아니다.
+- True posterior를 알 수 없기 때문에 세번째 항을 제거하게 되고, 그에 따라 부등식으로 바뀌게된다. 즉, 이상적인 분포를 모르더라도 Lower Bound가 posterior와 같거나 하한선일 것이다.
 
 ### 2-5.Loss Function
 
-<img src="{{site.url}}/images/240820/0012.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0012.png" width="1200" height="300">
 ELBO를 기반으로 만들어진 손실함수는 다음과 같은 의미를 갖는다. 첫번째 항은 모델이 추정한 잠재변수가 decoder에 입력되었을 때, 학습 데이터셋의 분포에 속하는 데이터를 만들 확률을 최대화하는 Maximum Likelihood이고 두번째 항은 정규분포인 p(z)와 예측분포인 q(z|x) 간 유사정도를 계산하는데 이는 여러가지 예측분포들 중 이왕이면 정규분포와 비슷한 것을 선택하도록 강제한다.
 
 참고로 decoder로 입력되는 잠재변수는 예측분포에서 샘플링된 값이기 때문에 Backpropagation 과정에서 손실값에 따른 입력값의 미분을 구할 수 없기 때문에 ```Reparameterization Trick```이라는 것을 사용한다.  
@@ -150,17 +154,17 @@ ELBO를 기반으로 만들어진 손실함수는 다음과 같은 의미를 갖
 # 3.Generative Adversarial Networks(GAN)
 
 ## 3-1.Generator, Discriminator
-<img src="{{site.url}}/images/240820/0013.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0013.png" width="1200" height="300">
 VAE는 variational inference로 Lower Bound $q_\emptyset(z|x)$를 추정하면서 정규분포인 p(z)가 되도록 규제한다. 하지만 GAN은 이러한 분포 추정이 이루어지지 않고 생성된 데이터와 실제 데이터를 판별하고 속이는 과정을 거치면서 생성모델이 학습 데이터셋의 분포를 학습해간다.
 
-<img src="{{site.url}}/images/240820/0018.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0018.png" width="1200" height="300">
 
 판별기 모델은 우리가 이미지 분류에서 사용하는 것과 거의 같다.
 
 - 수식을 보면 실제 데이터 x가 입력되었을 때 판별기 D(x)의 확률을 최대로 높혀 log(D(x))를 최대화한다.
 - 반대로 생성기가 만든 가짜 데이터 G(x)가 입력으로 주어졌을 때는 확률을 최소화해 log(1-D(G(z)))를 최소화한다.
 
-<img src="{{site.url}}/images/240820/0017.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0017.png" width="1200" height="300">
 
 - 생성기는 반대로 판별기가 가짜임을 구분하는 확률을 최소화하려고한다.
 - 하지만 이 수식은 학습 초기에는 작은 기울기를, 판별기를 잘 속이는 학습 후반에는 큰 기울기를 갖도록 구성되어 있다.
@@ -171,11 +175,11 @@ VAE는 variational inference로 Lower Bound $q_\emptyset(z|x)$를 추정하면�
 
 GAN의 학습은 다음과 같이 정리할 수 있다.
 
-<img src="{{site.url}}/images/240820/0015.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0014.png" width="1200" height="300">
 
 분포 변화 시각화를 보면 좀 더 명확하다.
 
-<img src="{{site.url}}/images/240820/0014.jpg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0015.png" width="1200" height="300">
 
 분명 굉장히 창의적인 아이디어지만 적대적인 관계 때문에 학습이 쉽지 않다. 대표적인 문제가 Mode Collapse인데 생성기는 결국 판별기의 예측결과를 피드백으로 학습하기 때문에 이 과정에서 판별기가 구분하지 못하는 특정 패턴을 발견한 경우 해당 패턴만 계속해서 사용하고 더 이상의 다양성을 고려하지 않게 된다.
 
