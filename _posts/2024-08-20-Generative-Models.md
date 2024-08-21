@@ -30,13 +30,13 @@ use_math: true
 
 ## 1-2.Manifold
 
-<img src="{{site.url}}/images/240820/0001.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0001.jpg" width="1200" height="300">
 
 설명을 위해 각각의 데이터 샘플은 [28, 28, 1]의 이미지라고 해보자. 
 
 이러한 데이터 샘플들을 점(point)으로 포함하는 784차원의 공간을 \$ R^m $\이라고 할 때,  Manifold는 이러한 전체공간 중에서 데이터 샘플들의 핵심 특성들을 포함하는 부공간(subspace)를 말한다. 쉽게 말해 전체공간처럼 모든 데이터 샘플들을 포함하지만 차원이 더 낮은 공간인 것이다.
 
-<img src="{{site.url}}/images/240820/0002.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0002.jpg" width="1200" height="300">
 
 정의를 보면 알겠지만 manifold를 찾는 것은 생성 작업에만 국한되는 것이 아니라 분류나 회귀 같은 모든 작업에 있어 최우선이 되는 핵심적인 과제인데, 다음과 같이 정리할 수 있다.
 
@@ -47,7 +47,7 @@ use_math: true
     - 문제는 차원의 증가에 따라 공간이 커지더라도 결국 각각의 이미지는 공간내 점이기 때문에 공간상 점들의 밀도가 낮아 모델 입장에서는 학습할 내용에 비해 양이 작은 상태가 되므로 많은 양의 데이터를 확보가 필수적이다.
     - manifold를 잘 찾으면 불필요한 차원을 배제하는 효과가 있어 전체공간보다 밀도가 높아지므로 결국 적은 데이터로도 좋은 성능의 모델을 만들 수 있다.
 
-<img src="{{site.url}}/images/240820/0003.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0003.jpg" width="1200" height="300">
 
 manifold가 크리티컬한 또 다른 이유는 ```의미적 거리 또는 유사도```에 있다. 
 
@@ -61,7 +61,7 @@ Likelihood(가능도)의 정의는 **주어진 데이터나 관찰된 결과가 
 
 무슨 말인지 이해하기 어려울텐데 쉽게 말하면 관측치(데이터)가 주어지면 특정 파라미터 $\theta$를 갖는 모델에서 관측될 확률이 가능도이다.
 
-<img src="{{site.url}}/images/240820/0004.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0004.jpg" width="1200" height="300">
 
 예를 들어 앞면과 뒷면이 나올 확률이 동일한 동전을 10번 던졌을 때 앞면이 7번 나왔을 때,
 - 모델(특정한 모형이나 가정) : 앞면과 뒷면이 나올 확률이 동일하다.
@@ -75,7 +75,7 @@ Likelihood(가능도)의 정의는 **주어진 데이터나 관찰된 결과가 
 
 가능도에 대해 이해했다면 최대 가능도 추정법에 대해 이해할 수 있다.
 
-<img src="{{site.url}}/images/240820/0005.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0005.jpg" width="1200" height="300">
 
 결국 우리가 만드는 DNN은 입력에 따른 출력을 반환하는 함수이며 출력의 형태는 우리가 함수를 어떻게 정의하는가에 따라 달라진다. 
 - 함수의 정의는 우리가 풀고자하는 문제에 해당하니 회귀 문제를 풀어야 한다면 연속적인 값을, 분류 문제를 풀어야 한다면 확률을 반환한다.
@@ -92,7 +92,7 @@ Likelihood(가능도)의 정의는 **주어진 데이터나 관찰된 결과가 
 
 기본적인 오토인코더는 비선형 차원축소(Dimension Reduction)와 재건(Reconstruction)을 수행하는 모델이다.
 
-<img src="{{site.url}}/images/240820/0007.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0007.jpg" width="1200" height="300">
 
 - 구조는 그림과 같이 Encoder-Decoder로 구성되어 있으며 Encoder는 차원축소, Decodeer는 재건하는 방법을 학습한다.
 - Encoder는 입력된 이미지에서 핵심적인 특징을 추출하는 Feature Extraction을 수행하고, 압축된 결과물인 latent vector(잠재벡터)를 출력한다.
@@ -105,7 +105,7 @@ Decoder의 작업을 보면 알겠지만 encoder의 입력이 곧 decoder가 만
 
 ## 2-2.Variational AutoEncoder
 
-<img src="{{site.url}}/images/240820/0008.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0008.jpg" width="1200" height="300">
 
 VAE(변분 오토인코더)는 오토인코더와 마찬가지로 Encoder-Decoder 구조를 가지지만 이미지 생성이 목적인 모델이다.
 
@@ -116,7 +116,7 @@ VAE(변분 오토인코더)는 오토인코더와 마찬가지로 Encoder-Decode
 ### 2-3.Manifold 공간상 거리
 encoder로 이상적인 분포 $p_{data}$와 근사하는 분포를 추정하는 것은 어떤 의도로 설계된 것일까??
 
-<img src="{{site.url}}/images/240820/0009.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0009.jpg" width="1200" height="300">
 
 일단 모델이 추정하는 분포도 $p_{data}$처럼 정규분포라고 가정할 수 있을 것이고 연구진은 이를 실험했을 것이다.
 
@@ -149,29 +149,29 @@ ELBO를 기반으로 만들어진 손실함수는 다음과 같은 의미를 갖
 
 # 3.Generative Adversarial Networks(GAN)
 
-### 3-1.Generator, Discriminator
+## 3-1.Generator, Discriminator
 <img src="{{site.url}}/images/240820/0013.jpg" width="1200" height="300">
 VAE는 variational inference로 Lower Bound $q_\emptyset(z|x)$를 추정하면서 정규분포인 p(z)가 되도록 규제한다. 하지만 GAN은 이러한 분포 추정이 이루어지지 않고 생성된 데이터와 실제 데이터를 판별하고 속이는 과정을 거치면서 생성모델이 학습 데이터셋의 분포를 학습해간다.
 
-<img src="{{site.url}}/images/240820/0018.jpeg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0018.jpg" width="1200" height="300">
 
 판별기 모델은 우리가 이미지 분류에서 사용하는 것과 거의 같다.
 
 - 수식을 보면 실제 데이터 x가 입력되었을 때 판별기 D(x)의 확률을 최대로 높혀 log(D(x))를 최대화한다.
 - 반대로 생성기가 만든 가짜 데이터 G(x)가 입력으로 주어졌을 때는 확률을 최소화해 log(1-D(G(z)))를 최소화한다.
 
-<img src="{{site.url}}/images/240820/0017.jpeg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0017.jpg" width="1200" height="300">
 
 - 생성기는 반대로 판별기가 가짜임을 구분하는 확률을 최소화하려고한다.
 - 하지만 이 수식은 학습 초기에는 작은 기울기를, 판별기를 잘 속이는 학습 후반에는 큰 기울기를 갖도록 구성되어 있다.
 - 따라서 판별기가 틀릴 확률을 최대화 하는 것으로 수식을 개선한다.
 
 
-### 3-2.학습 전략
+## 3-2.학습 전략
 
 GAN의 학습은 다음과 같이 정리할 수 있다.
 
-<img src="{{site.url}}/images/240820/0015.jpeg" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0015.jpg" width="1200" height="300">
 
 분포 변화 시각화를 보면 좀 더 명확하다.
 
@@ -188,12 +188,12 @@ Diffusion Model은 확산 모델의 시작으로 이미지에 가우시안 노�
 이것이 가능한 이유는 물리학적으로 Forward 단계에서 충분히 긴 시간동안 굉장히 작은 노이즈를 조금씩 더했다면 Reverse 단계에서 원본으로 되돌아가기 위해 더해지는 노이즈도 정규분포를 따르기 때문에 다음 위치(다음 단계 이미지)를 추정할 수 있다는 배경을 기반으로 한다.
 
 ## 4-1.DPM, DDPM
-<img src="{{site.url}}/images/240820/0019.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0019.jpg" width="1200" height="300">
 
 DPM과 DDPM은 다음 단계의 이미지는 현재 단계 이미지에만 의존한다는 Markov Chain을 전제로 Forward, Reverse 모두 현재보다 과거의 값에는 영향을 받지 않고 현재 추정한 분포에서 샘플링한 노이즈를 현재의 이미지에 더해 다음 단계 이미지를 만들어낸다는 것도 핵심이다.(이름에 Probablisitc이 있는 이유는 추정한 분포에서 샘플링한 노이즈를 더하기 때문)
 
-## 4-2.Forward
-<img src="{{site.url}}/images/240820/0020.png" width="1200" height="300">
+### Forward
+<img src="{{site.url}}/images/240820/0020.jpg" width="1200" height="300">
 
 이미지로부터 노이즈를 더하는 Forward 과정의 수식을 보면 
 - 이미지와 동일한 형상의 가우시안 노이즈를 그냥 더하는 것이 아니라 t단계의 이미지를 $ 1-\beta_t $ 만큼 감쇠한다.
@@ -203,13 +203,13 @@ DPM과 DDPM은 다음 단계의 이미지는 현재 단계 이미지에만 의�
 
 이렇게 정의한 이유는 변화하는 분포의 분산을 1로 유지하기 위함인데 아마도 분산이 크면 그만큼 변동성이 커지게 되서 학습의 안정성이 낮아져 추정이 어려워지기 때문일 것 같다. 또한 단순히 가우시안 노이즈를 이미지에 더하는 과정의 연속이기 때문에 학습으로 파라미터를 업데이트할 필요가 없다.
 
-<img src="{{site.url}}/images/240820/0021.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0021.jpg" width="1200" height="300">
 
 DPM의 다음 버전인 DDPM에서는 forward 수식을 개선해 $ x_t $번째 이미지를 $ x_0 $부터 t단계까지 sequential하게 변환하지 않고 $x_0$에서 $x_t$를 바로 구할 수 있게 했다. 이에 따라 inference에서 reverse 단계인 이미지를 생성할 때 스텝 수를 줄일 수 있게 되고 결과적으로 생성하는 시간을 줄일 수 있게 된다.
 
 
-## 4-3.Reverse
-<img src="{{site.url}}/images/240820/0022.png" width="1200" height="300">
+### Reverse
+<img src="{{site.url}}/images/240820/0022.jpg" width="1200" height="300">
 
 Reverse 단계에서는 가우시안 분포와 근사하는 $ x_T $로부터 원본 $ x_0 $로 복원하는 과정을 수행한다.
 - 여기서도 문제는 데이터의 원래 분포를 알기 어렵다는 점.
@@ -218,36 +218,28 @@ Reverse 단계에서는 가우시안 분포와 근사하는 $ x_T $로부터 원
 
 결과적으로 Diffusion 모델이 학습하는 것은 $ x_T $에서 시작해 데이터의 분포 $ p_{data} $를 생성하기 위한 Maximum Likelihood이다.
 
-## 4-4.정리
+### 정리
 
-<img src="{{site.url}}/images/240820/0023.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0023.jpg" width="1200" height="300">
 
-## 4-5.ELBO
+### ELBO
 
 참고로 아래 식을 유도하는 과정을 이해하는 것은 굉장히 높은 수학적 지식을 요구하기 때문에 필기한 내용을 따라가는 것을 추천한다.(물론 모델을 그냥 쓰기만 할거면 이해할 필요 없다.)
 
-<p align="center">
-<img src="{{site.url}}/images/240820/0024.png" width="1200" height="300">
-</p>
+<img src="{{site.url}}/images/240820/0024.jpg" width="1200" height="300">
+DDPM에서는 True Posterior인 $ q(x_{t-1} | x_t) $는 구하기 어려우니 $ q(x_{t-1} | x_t, x_0) $로 이상적인 분포를 정의한다. $ x_0 $를 활용할 수 있는 이유는 forward의 개선된 식에 의해 $ x_0 $에서 $ x_t $를 바로 구할 수 있다는 것이고, 해당 식을 $ x_0 $에 대한 식으로 정리하면 $ x_t $를 이용해 $ x_0 $를 구할 수 있다.  이 과정에서 $ q(x_{t-1} | x_0),  q(x_{t} | x_0) $의 평균과 분산은 모델이 예측하도록 학습하지 않고 $ q(x_{t-1} | x_t, x_0) = N(x_{t-1} l; \tilde \mu(x_t, x_0), \tilde \beta_t) $에 대한  확률밀도함수의 정의에 따라 계산된다.
 
-DDPM에서는 True Posterior인 $ q(x_{t-1} | x_t) $는 구하기 어려우니 $ q(x_{t-1} | x_t, x_0) $로 이상적인 분포를 정의한다. 
-
-$ x_0 $를 활용할 수 있는 이유는 forward의 개선된 식에 의해 $ x_0 $에서 $ x_t $를 바로 구할 수 있다는 것이고, 해당 식을 $ x_0 $에 대한 식으로 정리하면 $ x_t $를 이용해 $ x_0 $를 구할 수 있다. 
-
-이 과정에서 $ q(x_{t-1} | x_0),  q(x_{t} | x_0) $의 평균과 분산은 모델이 예측하도록 학습하지 않고 $ q(x_{t-1} | x_t, x_0) = N(x_{t-1} l; \tilde \mu(x_t, x_0), \tilde \beta_t) $에 대한  확률밀도함수의 정의에 따라 계산된다.
-
-<img src="{{site.url}}/images/240820/0025.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0025.jpg" width="1200" height="300">
 결과적으로 DDPM에서 $ q(x_{t-1} | x_t, x_0) $가 의미하는 것은 평균을 예측해 분포를 추정하는 것보다 스텝 t에 어떤 노이즈가 더해졌는지를 예측하는 것으로 문제를 간소화하게 되고 forward에서 개선했던 $ x_0 $에서 $ x_t $를 직접 구할 때 모델이 예측한 노이즈를 적용할 수 있게 된다. DPM은 분포의 평균을 추정하고 노이즈를 샘플링했고, DDPM은 샘플링되는 노이즈 자체를 예측하게 되는 Stochastic한 과정을 수행하므로 Reparameterization Trick이 수식에 반영된다.
 
 
-## 4-6.Loss function
+### Loss function
 
-<img src="{{site.url}}/images/240820/0026.png" width="1200" height="300">
+<img src="{{site.url}}/images/240820/0026.jpg" width="1200" height="300">
 
 ELBO를 기반으로 정의된 손실함수는 다음과 같이 3개의 항으로 구성된다.
 - DDPM에서의 forward process는 $x_T$ 가 항상 gaussian distribution을 따르도록 하기 때문에 사실상 tractable한 distribution이라 $q(x_T∣x_0)$ 는 prior p(x_T) 와 거의 유사하다. 
 - 또한, DDPM에서는 forward process variance를 constant로 고정시킨 후 approximate posterior를 정의하기 때문에 이 posterior에는 learnable parameter가 없다.
 - 따라서 첫번째 항은 항상 0에 가까운 상수이며, 학습과정에서 무시된다.
 - 마지막 항은 두 개의 정규분포간 KL Divergence를 계산하는 것이고, VAE에서 봤던 것처럼 두 개의 정규분포에 대한 KLD는 계산 방법이 정해져 있으므로 상수취급한다.
-
 
