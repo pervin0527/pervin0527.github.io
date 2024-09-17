@@ -154,3 +154,143 @@ bert는 대규모 unlabeled data를 사용하는 self-supervised learning을 통
 이 때, Backbone인 bert는 그대로 두고, task에 맞는 출력을 만들어 내기 위한 작은 NN을 추가함으로써 학습 및 추론을 수행한다.
 
 여기서 한 가지 알 수 있는 점은 비록 BERT가 출간되어 Pretrained Weight를 사용할 수 있게 되었고 그에 따른 여러 장점들이 존재하지만, **task별로 별도의 모델이 필요하다는 점은 여전히 문제로 남아 있는 상태다.**
+
+# 3.GPT
+
+## 3-1.GPT-1
+
+[Improving Language Understanding by Generative Pre-Training](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+
+GPT는 Bert처럼 대규모 데이터셋을 사전학습함으로써 언어를 이해하게 되며 이를 downstream task에 적용하는 방식이다.
+
+<img src="{{site.url}}/images/240825/0015.png" width="1200" height="500">
+
+- Transformer의 Decoder로 구성.(Multi layer Transfomer Decoder)
+- Bert의 Masked Language Modeling과 다르게 다음 단어를 생성하는 방식으로 pretrain이 진행된다.(이를 ```Casual Language Model```이라한다.)
+- 즉, bert는 양방향으로 문맥을 이해하지만 gpt는 문장의 흐름대로 앞부분의 문맥을 보고 다음에 올 단어를 예측하는 단방향(undirectional) 학습을 수행한다.
+- 40000개 단어에 대한 BPE 토크나이저와 단어집을 구축.
+- Positional Embedding 사용.
+
+중요한 점은 트랜스포머 decoder에서 수행되는 Self-Attention은 Masked Self-Attention으로, 미래 정보를 반영하지 못하게 마스킹하기 때문에 예측하는 단어의 앞단어만을 반영해 예측을 하는 것이다.
+
+<img src="{{site.url}}/images/240825/0016.png" width="1200" height="500">
+
+따라서 gpt 모델은 N개의 토큰으로 구성된 문장을 입력으로 받아 N+1개의 토큰으로 구성된 시퀀스를 생성하게 된다.
+
+- 가장 먼저 sos토큰이 입력되고, 다음으로 올 단어를 생성한다.
+- 이후 eos 토큰을 생성하거나 출력 시퀀스의 최대길이에 도달하면 생성을 종료한다.
+- 기계번역을 수행하는 트랜스포머 모델이 추론 과정에서 번역문을 생성할 때처럼 eos 토큰을 생성할 때까지 반복.
+
+<img src="{{site.url}}/images/240825/0017.png" width="1200" height="500">
+
+- Fine-tuning 단계에서는 task에 맞게 입력을 $토큰을 통해 하나의 문장으로 변환한다.
+- 사전학습 모델에 최소한의 변경만으로 효과적인 fine-tuning 가능.
+- Bert와 마찬가지로 task별 labeled dataset과 fine-tuned model이 필요하다.
+
+## 3-2.GPT-2 & GPT-3
+
+<img src="{{site.url}}/images/240825/0018.png" width="1200" height="500">
+
+GPT-2, GPT-3는 GPT1과 동일한 Transformer Decoder Layer 구조지만, 더 많은 Layer와 데이터를 사용해 Pretraining을 진행한다.
+
+- 규모를 확장하는 궁극적인 목적은 하나의 모델로 여러 개의 task를 수행하기 위함이다.
+- 즉, Multi-task Learning처럼 여러가지 task를 동시에 학습시킨 하나의 모델 구축.
+- 사전학습시 언어에 대한 일반적 지식과 task에 대한 인지 능력을 향상 시키는 것이 주목적.
+- 또한 모델의 크기가 커질수록 일반화 성능도 함께 상승하는 Scaling Laws를 발견.
+
+### GPT-2
+
+[Language Models are Unsupervised Multitask Learners](https://openai.com/index/gpt-2-1-5b-release/)
+
+<img src="{{site.url}}/images/240825/0019.png" width="1200" height="500">
+
+GPT-2는 여러가지 task를 하나의 모델로 수행할 수 있게하기 위해 다음과 같은 과정이 추가되었다. 
+
+- 전체적인 입출력 형식은 동일하지만 task별로 구분이 가능하게 만든다.
+- 이를 위해 입력에는 지시문과 문맥(context)이 함께 입력되며 모델의 출력은 정답에 해당한다. 
+- 즉, Pretrain 단계에서 지시문(Prompt)을 입력에 제공함으로써 현재 모델이 어떤 작업을 처리해야할지 인지시켜주는 방식을 도입한다.
+- 하지만 pretrain만으로 모든 task에 최적화할 수는 없었기 때문에 필요에 따라 fine-tuning을 하기도 한다.
+
+### GPT-3
+
+[Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)
+
+GPT-3에서는 In-Context Learning이라는 개념이 소개되었는데, 여러 task들을 수행하기 위한 데이터셋, fine-tuning이 필요하지 않고, 입력으로 몇 가지 예제를 제공하는 것만으로 성능이 향상될 수 있다고 한다.
+
+즉, 사용자가 입력한 내용에서 맥락적 의미(in-context)를 모델이 이해(learning)하고 답변을 생성할 수 있다는 것이다.
+
+이 때 사용자가 입력한 내용에는 예제가 적용될 수 있는데 이를 shot이라고 하며 하나의 예제는 One-shot, 여러 개의 예제는 Few-shot, 예제가 없는 경우를 Zero-shot이라고 한다.
+
+- 예제가 적용되는 경우 labeled 데이터의 수가 극소량만 있으면 된다.
+- 다만 task별로 예제가 필요하며 fine-tuning 보다 최고 성능이 낮다.
+- zero shot의 경우 예제가 입력에 포함되지 않기 때문에 굉장히 효율적이고 일반화 성능을 평가하기에 좋지만 그만큼 성능은 더 낮아질 수 있다.
+
+### 한계점
+
+이러한 발전에도 불구하고 여러 약점들이 존재한다.
+
+- 같은 단어가 반복적으로 생성되거나 답변의 길이가 길어지면 일관성을 잃어버린다. 또한, 입력에 대한 응답이 부적절한 경우도 발생한다.
+- 모델의 규모가 커질수록 성능은 향상되지만 규모가 굉장히 크기 때문에 추론시 비용이 너무 크다.
+
+# 4.BART
+
+[Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension](https://arxiv.org/abs/1910.13461)
+
+## 4-1.개요
+
+<img src="{{site.url}}/images/240825/0020.png" width="1200" height="500">
+
+- Bart는 Transfomer와 동일한 Encoder-Decoder 구조. 
+    - encoder는 입력 source 시퀀스를 압축하는 역할. (자연어 이해, NLU)
+    - decoder는 압축된 context 벡터를 입력 받아서 target 문장을 생성.(자연어 생성, NLG)
+- sequence to sequence --> source와 target의 속성이 다르고 이들을 변환하는 요약, 번역과 같은 작업에 효과적이다.
+
+## 4-2.Noised Pretrain
+
+<img src="{{site.url}}/images/240825/0021.png" width="1200" height="500">
+
+BART의 사전학습 단계에서는 원본 문장에 5개의 다양한 노이즈를 임의로 적용해 손상시키고 이를 복원시키는 방식으로 학습된다.
+
+###  Token Masking
+
+<img src="{{site.url}}/images/240825/0022.png" width="1200" height="500">
+
+- Bert에서 적용된 것과 동일한 방식으로 임의의 토큰을 샘플링하여 MASK 토큰으로 대체한 문장을 Encoder에 입력한다.
+- Decoder에서는 원래 문장을 생성.
+
+### Token Deletion
+
+<img src="{{site.url}}/images/240825/0023.png" width="1200" height="500">
+
+- 임의의 토큰을 삭제하고 Encoder에 입력.
+- Decoder는 원래 문장을 생성.
+
+### Token Infilling
+
+<img src="{{site.url}}/images/240825/0024.png" width="1200" height="500">
+
+- 토큰을 마스킹하지 않고 연속된 0~N개의 토큰으로 이루어진 다수의 span을 마스킹하고 encoder에 입력.
+- "나는 오늘 도서관에 가서 책을 읽을 것이다." --> "나는 오늘 MASK에 가서 MASK을 읽을 것이다."
+- Decoder에서는 원래 문장을 생성.
+
+### Sentence Permutation
+
+<img src="{{site.url}}/images/240825/0025.png" width="1200" height="500">
+
+- 문서를 마침표 기준으로 분할하고 순서를 섞은 뒤 encoder에 입력.
+- Decoder에서는 원래 문장을 생성.
+
+### Document Rotation
+
+<img src="{{site.url}}/images/240825/0026.png" width="1200" height="500">
+
+- 전체 문서에서 임의로 선택된 token이 시작 token이 되도록 회전한 문장을 encoder에 입력.
+- Decoder에서는 원래 문장을 생성.
+
+## 4-3.Fine Tuning
+
+<img src="{{site.url}}/images/240825/0027.png" width="1200" height="500">
+
+- Source 문장을 Encoder에 넣고 Decoder가 target 문장을 생성하는 방식으로 fine-tuning 진행.
+- 번역이나 요약 같은 생성 작업에 효과적.
+- 특히 번역에서는 pretrain 하지 않은 언어도 번역할 수 있도록 Randomly Initialized Encoder를 추가하는 새로운 방식 제시.
