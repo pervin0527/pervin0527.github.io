@@ -6,7 +6,7 @@ tag: [Deep-Learning, NLP]
 use_math: true
 --- 
 
-Languae Model & Large Language Model
+Pretrained Base Language Model
 
 # 1.Transfer Learning
 
