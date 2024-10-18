@@ -6,16 +6,8 @@ tag: [Deep-Learning, Information-Retrieval, Competition]
 use_math: true
 ---
 
-# 0.Repository
 
 [GitHub - pervin0527/IR](https://github.com/pervin0527/IR)
-
-핵심 포인트
-
-- 이번 대회에서는 생성문에 대한 평가는 이루어지지 않는다.
-- 즉, 검색엔진이 입력된 쿼리와 가장 연관성이 높은 문서들을 잘 골라내는 것이 핵심이다.
-    
-    **대회 뿐만이 아니라 서비스적인 측면에서 봐도 당연히 핵심.**
     
 
 # 1.RAG Pipeline
@@ -28,8 +20,8 @@ use_math: true
 업스테이지 강의 자료에서 이해한대로 크게 3가지 프로세스로 구분했다.
 
 - 파란색 : 문서 임베딩, 벡터 데이터베이스(스토어)
-- 주황색 : 유저가 입력한 쿼리를 처리한다.
-- 초록색 : 검색
+- 주황색 : 유저가 입력한 쿼리를 처리한다.(멀티턴 대화를 standalone query로 변환하고, 과학적 상식에 적합한지 판단.)
+- 초록색 : standalone query 임베딩과 벡터 DB에 저장된 문서들과의 유사도를 계산한다.
 
 ## 1-2.Query
 
@@ -59,14 +51,16 @@ use_math: true
 
 대회 베이스라인 코드에는 ElasticSearch + Nori를 사용했지만 elasticsearch를 사용하지 않을 것이기 때문에 다음 두 가지를 실험했다.
 
-- Kiwi 형태소 분석기와 BM25(Langchain)
+- 형태소 분석기(Kiwi, Okt)와 BM25(Langchain)
 - [intfloat/multilingual-e5-large-instruct](https://huggingface.co/intfloat/multilingual-e5-large-instruct) 기반 임베딩
 
-리더보드 점수를 보면 `kiwi 형태소 분석기 + BM25`를 실험했을 때 벡터 임베딩 방식보다는 점수가 낮다.
+리더보드 점수를 보면 `형태소 분석기 + BM25`를 실험했을 때 벡터 임베딩 방식보다는 점수가 낮다.
 
 <img src="{{site.url}}/images/241013/스크린샷 2024-10-10 17.42.15.png" width="1200" height="300">
 
-원인 해석 : 단어의 빈도수 보다 문맥적인 의미를 기반으로 하는 것이 더 효과적이지 않을까??
+이러한 결과가 나온 이유는 임베딩 방식이 키워드 방식보다 질의와 문서간 의미적 유사도를 계산하기 때문이 아닐까라고 생각한다.
+
+다만, 이 실험 단계에서는 두 가지 모두를 활용하는 ```Hybrid Retriever```를 생각하지 못했다.
 
 # 2.Embedding Models
 
@@ -79,16 +73,20 @@ use_math: true
 
 [IR/notebooks/13-embedding_mAP.ipynb at main · pervin0527/IR](https://github.com/pervin0527/IR/blob/main/notebooks/13-embedding_mAP.ipynb)
 
-이러한 문제를 개선하기 위해 GPT4o를 이용해 문서별로 3개의 질의를 생성하고 mAP를 계산하도록 만들었다.
+이러한 문제를 개선하기 위해 다음과 같은 절차들을 수행했다. 
 
+- GPT4o를 이용해 문서별로 3개의 질의를 생성한다.
 - 생성된 쿼리는 문서와 동일한 docid를 갖는다.
-- 따라서 검색으로 얻은 문서와 쿼리가 같은 docid를 갖는 경우 정답으로 간주한다.
+- 따라서 검색으로 얻은 문서와 쿼리가 같은 docid를 갖는 경우 정답으로 간주한다.(이 때 metric은 대회와 동일한 mAP.)
 
 다만 문서를 기반으로 만들어진 쿼리이기 때문에 **mAP가 리더보드보다 더 높게 측정되는 문제**가 있는데 어떻게 하면 좋을지 아직 모르겠다.
 
+정밀한 해결책을 찾기엔 너무 시간이 많이 소요될 것 같아 huggingface, upstage, openai 등 여러가지 임베딩 모델들의 대략적인 성능을 평가하는 용도로 사용했다.
+
+
 ## 2-2.다른 사람들의 자료 참고하기
 
-차선책으로 한국어 임베딩 기반 RAG를 연구하는 사람들의 자료를 참고하기 시작했다.
+이어서 한국어 임베딩 기반 RAG를 연구하는 사람들의 자료를 참고하기 시작했다.
 
 <img src="{{site.url}}/images/241013/스크린샷 2024-10-10 20.37.25.png" width="1200" height="300">
 
@@ -102,18 +100,21 @@ use_math: true
 
 [어떤 한국어 임베딩 모델 성능이 가장 좋을까? 직접 벤치마크 해보자.](https://velog.io/@autorag/어떤-한국어-임베딩-모델-성능이-가장-좋을까-직접-벤치마크-해보자)
 
-리더보드 점수로 성능을 비교했을 때 순위는 다음과 같다.(기재되지 않은 모델은 실험하지 않은 것.)
+앞서 만든 (질의, 문서)쌍으로 성능을 비교했을 때 순위는 다음과 같다.
 
-1. [upstage/solar-embedding-1-large](https://python.langchain.com/docs/integrations/text_embedding/upstage/) `mAP : 91.52, MRR : 91.7`
-2. [intfloat/multilingual-e5-large-instruct](https://huggingface.co/intfloat/multilingual-e5-large-instruct) `mAP : 84.17, MRR : 84.39`
-3. [OpenAI/text-embedding-3-large](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings) `mAP : 82.88, MRR : 83.03`
+1. [upstage/solar-embedding-1-large](https://python.langchain.com/docs/integrations/text_embedding/upstage/) `mAP : 91.52`
+2. ["dragonkue/bge-m3-ko"](https://huggingface.co/dragonkue/BGE-m3-ko) `mAP: 0.9093`
+3. ["nlpai-lab/KoE5"](https://huggingface.co/nlpai-lab/KoE5) `mAP : 0.8946`
+4. [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3) `mAP : 0.8933`
+5. [intfloat/multilingual-e5-large-instruct](https://huggingface.co/intfloat/multilingual-e5-large-instruct) `mAP : 84.17`
+6. [OpenAI/text-embedding-3-large](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings) `mAP : 82.88`
+
 
 # 3.성능 개선을 위한 시도
 
 ## 3-1.Query Expension
 
-
-검색을 위한 쿼리가 명확해야 좋은 검색이 가능하다.
+"검색을 위한 쿼리가 명확해야 좋은 검색이 가능하다."라는 멘토님의 피드백으로 쿼리의 품질을 개선하고자 시도했다.
 
 - 쿼리 : `버스는 무엇인가?`
 - 도로 위를 달리는 버스인지, 컴퓨터 공학에서 말하는 버스인지 알 수 없다.
@@ -128,8 +129,8 @@ use_math: true
 <img src="{{site.url}}/images/241013/스크린샷 2024-10-10 22.20.33.png" width="1200" height="300">
 
 - huggingface의  [intfloat/multilingual-e5-large-instruct](https://huggingface.co/intfloat/multilingual-e5-large-instruct)과 활용했을 때는 약간의 성능 개선이 이루어졌다.
-- 하지만 upstage 임베딩 모델과 조합했을 때는 upstage 임베딩 모델만 사용했을 때보다 점수가 낮았다.
-    - 이유가 무엇인지….
+- 하지만 upstage 임베딩 모델과 조합했을 때는 오히려 성능이 떨어졌다.
+    - 아마도 쿼리에 부가 정보가 너무 많아져 적절한 검색에 어려움을 겪는 것이 아닐까라는 생각에 프롬프트를 간소화하여 쿼리를 생성했으나 역시나 결과가 좋지 못했다.
     - 200개 가량의 쿼리를 사람이 개선해본다면 어떨까??
 
 
@@ -150,15 +151,14 @@ use_math: true
 
 하지만 요약만을 문서로써 임베딩 하는 방식은 문맥 정보가 손실되기 때문인지 성능이 오히려 크게 감소하는 모습을 보였다.
 
-- 제목이나 요약문을 문서의 초반부에 문장형태로 도입한다면 어떨까??
-- 학습한 데이터처럼 문장 형태로 반영해야하는 것이 핵심.
+제목이나 요약문을 문서의 초반부에 문장형태로 추가하는 것도 시도를 해봤지만 역시나 점수가 감소하였다.(쿼리 확장과 마찬가지로 불필요한 정보가 너무 많이 추가되어 그런 것일까?)
 
 ## 3-3.ReRanker
 
 
 [01. Cross Encoder Reranker](https://wikidocs.net/253836)
 
-쿼리에 따라 문서들이 검색되고 나면 유사도를 기반으로 순위가 결정된다. Reranker는 1차적으로 검색된 모델들을 다시 평가하고 순위를 재조정하는 역할한다.
+쿼리에 따라 문서들이 검색되고 나면 유사도를 기반으로 순위가 결정된다. Reranker는 1차적으로 검색된(Pre-Retriever) 모델들을 다시 평가하고 순위를 재조정(Post-Retriever)하는 역할한다.
 
 서비스를 위한 RAG를 설계에서는 1차 검색 때는 가벼운 검색 엔진을 사용해 빠르게 후보들을 선별하고, reranking 단계에서는 복잡하고 계산 비용이 큰 모델(Cross-Encoder)을 사용하여 문서와 쿼리 간의 미세한 상호작용을 고려하게끔 만든다.
 
@@ -190,25 +190,52 @@ langchain에서도 reranking을 위한 모듈을 구현해뒀기 때문에 huggi
 
 모델을 여러가지 사용할 수 있고, 각 모델에 대한 가중치를 설정하는 방식이기 때문에 조합할 수 있는 경우의 수가 굉장히 많아 실험 시간이 길어지지만 전반적으로 성능 개선이 이루어지는 것을 확인할 수 있었다.
 
-다만 한가지 고려할 사항은 역시 한국어 임베딩 모델들의 성능과 선택의 폭이 좁다는 점이므로 쿼리와 문서를 영어로 실험하게 되었다.
+따라서 여러가지 모델 조합 및 적절한 가중치를 찾기 위해 Grid Search 방식으로 다음과 같은 조합을 찾았다.
 
-## 4.한계점 및 개선사항
+```python
+    ## query ensemble
+    query_ensemble = True
+    ensemble_weights = [0.2, 0.2, 0.6]  ## 각각의 모델 가중치 설정
+    ensemble_models = [
+        ## 앙상블에 사용할 모델
+        {'type' : 'hf', 'name' : "BAAI/bge-m3"},
+        {'type': 'hf', 'name': "dragonkue/bge-m3-ko"},
+        {'type': 'upstage', 'name': "solar-embedding-1-large-query"},
+    ]
+```
 
-## 4-1.한계
+## 3-5.검색결과 중복 제거
+
+<img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.17.32.png" width="1200" height="300">
+
+chunking(`chunk_size = 100`, `chunk_overlap = 50`)으로 설정하고 검색을 하게 되면 하나의 쿼리에 동일한 문서로부터 파생된 청크가 두 개 이상 top3에 포함되는 문제가 있었다.
+
+따라서 이러한 문제를 해결하고자 k개의 검색 결과에서 동일한 `docid`를 가지는 중복 청크들 중 가장 점수가 높은 하나만 선택하도록 수정했다.
+
+<img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.29.43.png" width="1200" height="300">
+
+- 중첩 제거 테스트
+    <img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.18.29.png" width="1200" height="300">
+
+    - upstage 임베딩
+    - chunking(chunk_size=100, chunk_overlap=50)
+    - query_ensemble
+    - 중복문서 제거
+    - 점수도 전반적으로 준수하고 top3를 모두 채우는 형태를 보인다.
+    
+- only-upstage-rm-dup
+
+    <img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.42.59.png" width="1200" height="300">
+
+    - upstage 임베딩
+    - chunking(chunk_size=100, chunk_overlap=50)
+    - 중복문서 제거
+    - 이상한 점은 유사도 점수가 낮고, top3를 모두 채우지 못하는 경우가 많아졌다.
+
+별거 아닌 것 같지만 중복제거 로직을 추가했을 때 `MAP=0.9197`, `MRR=0.9258`에서 `MAP=0.9227`, `MRR=0.9227`로 점수가 향상되었다.
 
 
-현재 상황을 정리해보면 어떤 모델을 사용하든, 어떤 방법을 사용하든 [upstage/solar-embedding-1-large](https://python.langchain.com/docs/integrations/text_embedding/upstage/)보다 점수가 높게 나올 수 없는 상황이 이어진다.
-
-더 자세하게 보자면 `huggingface에 공개되어 있는 임베딩 모델들 + 쿼리 앙상블 + 청킹 등` 다양한 조합을 시도해도 mAP가 90을 넘지 못한다. 왜 그럴까?
-
-주관적인 해석이지만  다른 임베딩 모델들은 [upstage/solar-embedding-1-large](https://python.langchain.com/docs/integrations/text_embedding/upstage/)에 비해 한국어에 대한 이해도(또는 실력)가 낮다고 본다.
-
-왜냐하면 정량평가 단계에서는 임베딩 모델의 성능 자체만으로 mAP가 80~91로 좋은 성능을 보여주지만 실제 쿼리 즉, 리더보드 점수는 그에 상응하지 못하기 때문. 
-
-더 쉽게 말하자면 문맥기반 이해도가 낮아 숫자만 바꿔서 똑같은 문제를 내도 틀리는 것과 비슷한 것 같고, 이로 인해 쿼리 임베딩에 대한 검색 역량이 부족한게 아닐까라고 추측한다.
-
-## 4-2.Anthropic : Introducing Contextual Retrieval
-
+## 3-6.Anthropic : Introducing Contextual Retrieval
 
 [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval)
 
@@ -227,6 +254,16 @@ langchain에서도 reranking을 위한 모듈을 구현해뒀기 때문에 huggi
 <img src="{{site.url}}/images/241013/스크린샷 2024-10-12 18.15.01.png" width="1200" height="300">
 
 예시로는 “Error code TS-999”라는 것을 쿼리로 검색했을 때, 임베딩 기반 검색은 “에러 코드에 대한 검색”을 의미로 갖는 문서를 찾게 되지만 해당 쿼리에서 핵심은 TS-999라는 단어와 관련된 문서를 찾는 것인데, BM25를 함께 사용하게 되면 핵심 키워드 TS-999를 갖는 문서를 검색할 수 있다.
+
+하이브리드 검색에 참여하는 검색기들을 어떻게 조합할 것인지에 대해서도 많은 방법들이 존재하지만, 일반적으로 많이 사용하는 RRF(Reciprocal Rank Fusion), CC(Contextual Compression)를 실험했다.
+
+- RRF(Reciprocal Rank Fusion)는 여러 검색기의 결과를 결합하는데, 각 검색기의 순위를 고려하여 점수를 매기는 방식으로 검색 결과에서 각 문서의 순위가 높을수록 더 높은 점수를 받게된다.
+- CC(Contextual Compression)는 문서와 쿼리의 문맥을 압축하여 더 적은 정보로도 문서의 중요도를 판단하는 방식으로 문서의 전체 정보를 사용하지 않고, 문맥적으로 중요한 부분을 선택해 집중한다.
+
+<img src="{{site.url}}/images/241013/스크린샷 2024-10-18 15.04.17.png" width="1200" height="300">
+<img src="{{site.url}}/images/241013/스크린샷 2024-10-18 15.04.22.png" width="1200" height="300">
+
+한 가지 아이러니 한 점은 분명 CC 방식이 이론적으로 더 좋아보이지만 성능은 두 방식 모두 동일한 결과를 보였다.
 
 ### 2.Contextual Retrieval
 
@@ -260,62 +297,30 @@ chunking은 길이가 긴 문서를 여러 개의 조각으로 나눠서 쿼리�
 
 결과적으로 BM25와 임베딩 방식의 hybrid retriever를 사용하면서 contextual retriever를 함께 사용한다면 성능 향상이 중첩으로 이루어져 검색 오류가 Embedding + BM25의 5.0%보다 더 낮은 2.9%를 보이고 있다.
 
-## 4-3.검색결과 중복 제거
+이 방법을 적용했을 때의 개선 결과는 다음과 같다.
 
-<img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.17.32.png" width="1200" height="300">
+- GPT3.5-turbo `MAP=0.9333`, `MRR=0.9394`로 점수가 향상되었다.
+- GPT4o를 적용하면 청크에 추가되는 정보의 품질이 향상되기 때문에 `MAP=0.9470`, `MRR=0.9530`으로 향상되었다.
+- GPT4o를 사용하면서 프롬프트에 해당 청크가 어떤 부분이 부족한지를 알려주고 원본 문서에서 이를 추가하도록 수정해주면 `MAP=0.9515`, `MRR=0.9545`로 더욱 향상된다.
 
-chunking(`chunk_size = 100`, `chunk_overlap = 50`)으로 설정하고 검색을 하게 되면 하나의 쿼리에 동일한 문서로부터 파생된 청크가 두 개 이상 top3에 포함되는 문제가 있었다.
 
-따라서 이러한 문제를 해결하고자 k개의 검색 결과에서 동일한 `docid`를 가지는 중복 청크들 중 가장 점수가 높은 하나만 선택하도록 옵션을 수정했다.
+효과는 분명 확실하지만 이 방법은 생각보다 금전적, 시간 소모가 큰 방식이다.
 
-<img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.29.43.png" width="1200" height="300">
+대회 데이터는 가장 긴 문서의 길이가 1000자를 약간 넘기 때문에 청크로 잘랐을 때(chunk_size=100, chunk_size=50) 4247개 문서로부터 24799개의 청크가 파생되게 되는데, Contextual Retrieval는 문서와 각각의 청크쌍을 LLM에 입력해야하기 때문이다.
 
-- 중첩 제거 테스트
-    <img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.18.29.png" width="1200" height="300">
+또한, 해당 글에서 제시하는 Prompt Caching을 사용하면 분명 금액적으로는 GPT로 하는 것보다 저렴하지만, RPM(Rate Per Minutes)에 지속적으로 걸리기 때문에 소모되는 시간은 더 컸다.
 
-    - upstage 임베딩
-    - chunking(chunk_size=100, chunk_overlap=50)
-    - query_ensemble
-    - 중복문서 제거
-    - 점수도 전반적으로 준수하고 top3를 모두 채우는 형태를 보인다.
-    
-- only-upstage-rm-dup
+즉, 서비스 적용 단계에서는 처리과정에 최적화가 많이 필요한 방법이라 생각된다.
 
-    <img src="{{site.url}}/images/241013/스크린샷 2024-10-14 15.42.59.png" width="1200" height="300">
+# 4.대회 후기 및 생각할 점.
 
-    - upstage 임베딩
-    - chunking(chunk_size=100, chunk_overlap=50)
-    - 중복문서 제거
-    - 이상한 점은 유사도 점수가 낮고, top3를 모두 채우지 못하는 경우가 많아졌다.
+항상 궁금한 점이나 편의를 위해 사용하던 LLM을 정보 검색에 활용한다는 점 때문인지 굉장히 재밌게 대회를 진행했다.
 
-- UP-CH-ER
-    - `documents.jsonl`
-    - Chunking(`chunk_size=100`, `chunk_overlap=50`)
-    - Ensemble Retriever(Upstage Embedding + BM25)
-    - `MAP=0.8788`,`MRR=0.8803`
+그럼에도 현업에서 RAG 서비스를 하게 된다면 굉장히 까다로울 것이라고 생각이 든다.(앞으로도 공부할 점이 정말 많다는 것을 다시 한 번 느꼈다...)
 
-- UP-CH-ER-CR
-    - `documents.jsonl`
-    - Ensemble Retriever(Upstage Embedding + BM25)
-    - Contextual Retriever
-    - `MAP=0.9053`,`MRR=0.9091`
+- 4272개의 문서를 Upstage 임베딩 모델로 처리하는데 약 10분 정도 소모되었는데 현업에서 다루는 문서 데이터를 처리하는데 어떻게 속도를 빠르게하면서 높은 성능의 임베딩을 가능하게 할까?
+- 성능이 높은 GPT4나 Claud는 사용하는 만큼 비용이 발생하기 때문에 자체적으로 LLM을 갖추고 있어야 할텐데 기본적인 성능이 꽤나 높아야할 것이다.
+- 즉, LLama3 같은 오픈 모델을 사용할 수는 있겠지만 성능 고도화를 할 수 있어야하고 자원 및 시간을 최소화하면서 성능은 극대화할 수 있는 실력이 필요할 것 같다.
+- 성능 개선을 위해 적용한 Query Ensemble이나 Contextual Retriever는 분명 효과는 확실하지만 검색 속도를 느리게 만들거나 청크 증강에 소모되는 시간과 비용이 문제다. 이 점을 어떻게 해결할 수 있을까?
 
-- UP-CH-ER-QE
-    - `documents.jsonl`
-    - Chunking(`chunk_size=100`, `chunk_overlap=50`)
-    - Ensemble Retriever(Upstage Embedding + BM25)
-    - Query Embedding
-        - `"BAAI/bge-m3”`
-        - `"intfloat/multilingual-e5-large”`
-        - `"solar-embedding-1-large-query”`
-    - `MAP=0.9197`,`MRR=0.9258`
-
-- UP-ER-QE-CR
-    - `gpt_contextual_retrieval_documents.jsonl`
-    - Ensemble Retriever(Upstage Embedding + BM25)
-    - Query Embedding
-        - `"BAAI/bge-m3”`
-        - `"intfloat/multilingual-e5-large”`
-        - `"solar-embedding-1-large-query”`
-    - Contextual Retriever
-    - `MAP=0.9333`,`MRR=0.9394`
+또한, 7개월 동안 달려왔던 Upstage Ai Lab의 마지막 대회도 열심히 불태울 수 있어서 감사하다.
