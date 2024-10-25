@@ -8,7 +8,7 @@ use_math: true
 
 
 # GitHub
-[GitHub - pervin0527/IR](https://github.com/pervin0527/Upstage_Ai_Lab/tree/main/Final/IR)
+[https://github.com/pervin0527/Upstage_Ai_Lab/tree/main/16-IR_Project](https://github.com/pervin0527/Upstage_Ai_Lab/tree/main/16-IR_Project)
 
 # 1.데이터 분석
 
