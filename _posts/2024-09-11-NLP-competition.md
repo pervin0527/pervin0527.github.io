@@ -1,6 +1,6 @@
 ---
 layout: single
-title: "AiLab 3기 - 대화 요약 경진대회"
+title: "[Upstage Ai-Lab]Dialogue Summarization"
 categories: Competition
 tag: [Deep-Learning, Natural-Language-Processing, Competition]
 use_math: true
@@ -62,54 +62,21 @@ train, dev 데이터는 위와 같이 두 명이상의 사람들이 대화한 �
 
 # 5.시도한 방법들
 
-## 5-1.R3F
-
-<img src="{{site.url}}/images/240911/0009.png" width="1200" height="300">
-
-- input에 noise를 적용하고 얻은 추론과 noise를 적용하지 않은 추론간 KL-Divergence를 loss로 사용하는 방식입니다.
-- 두 예측 분포간 발산을 계산하므로 전체적인 문장의 차이를 손실로써 반영할 수 있을 것이라 생각했습니다.
-- 리더보드 점수는 39로 오히려 감소했는데, noise가 없는 input의 분포가 어느정도 좋은 성능을 보여야 의미가 있을 수 있는 방법이라 해석하고 있습니다.
-
-## 5-2.Rouge loss와 Reinforcement Learning
-
-- 대회 평가 지표인 Rouge score를 손실함수로 사용할 수는 없을까라는 생각이 있었습니다.
-- Rouge-1은 단어, Rouge-2는 bigram이다 보니 rouge를 손실로 반영한다면 어느정도 문장 관점 손실을 계산할 수 있을 것이라 생각하고 실제로 학습을 시도했습니다.
-- 학습 로그 자체는 준수했지만, 점수 향상은 이루어지지 않았고, 조사 끝에 rouge는 미분이 불가능하며 보통은 rouge를 reward로 해서 강화학습을 하는게 일반적이라고 합니다.
-- 따라서 해당 방식을 시도해봤는데 학습 속도가 굉장히 느리면서 수렴도 이루어지지 않아서 기각했습니다.
-
-
-## 5-3.영어 데이터 활용하기
-
-<img src="{{site.url}}/images/240911/0011.png" width="1200" height="300">
-
-- 한국어 자체적으로 갖는 여러 특성들로 인해 성능의 한계가 있을 것이라 생각되었으며, Back Translation 데이터를 확보할 수 있고, Pretrained weight 선택폭도 넓어지니 일석이조입니다.
-- 대회 규정상 오리지널 데이터는 사용이 불가능합니다. 따라서 SoLA, Gpt4 API를 이용해 train, dev를 영어로 다시 번역했습니다.
-- 영어로 학습시 더 빠르게 수렴되고 rogue score가 증가하는 양상을 보였습니다.
-- 테스트 데이터에 대한 예측을 만들고, LLM 모델로 다시 한국어로 번역해 결과를 제출합니다.
-- 하지만 리더보드 점수는 향상되지 못했습니다. 그 이유는 번역된 단어가 동의어 또는 유의어로 생성되서 정답 단어와 다르기 때문입니다. 즉, 요약문의 퀄리티는 꽤 괜찮았지만 리더보드 점수 향상으로 연결되지 못했습니다.
-
-## 5-4.LLama3 + LoRA
+## 5-1.LLama3 + QLoRA
 
 [https://llama.meta.com/docs/how-to-guides/fine-tuning/](https://llama.meta.com/docs/how-to-guides/fine-tuning/)
 
 Bart, T5 모델들은 이런저런 시도들을 하더라도 점수가 향상되지 못했기 때문에 LLM 모델을 사용해보기로 했습니다.
 
-모델은 LLama3-8B를 사용했는데, 전체를 fine tuning하기엔 컴퓨팅 자원이 턱없이 모자랐기 때문에 LoRA를 채택해서 소량의 파라미터만 학습했습니다.
+모델은 ```LLama3-8B-int4```를 사용했는데, 전체를 fine tuning하기엔 컴퓨팅 자원이 턱없이 모자랐기 때문에 QLoRA로 finetuning을 했고, 43점을 달성할 수 있었습니다.
 
-결과적으로 리더보드 점수가 43점을 달성할 수 있었습니다.
+## 5-2.Data Augmentation
 
-## 5-5.Back Translation + Data Generation
+train과 test간 어체 불일치가 있는 것을 파악할 수 있었습니다.
 
-<img src="{{site.url}}/images/240911/0012.png" width="1200" height="300">
+- SamSum 데이터셋을 한국어로 번역해 추가하고 대회 데이터를 Back translation해서 동의어 데이터 생성하고 학습시 44.6으로 1%개선.
+- train(구어체)과 test(문어체)간 어체차이를 통일 시키기 위해 dialogue-to-summary, summary-to-dialogue 데이터 생성하고 학습시 45.72로 2%개선.
 
-멘토링 시간에 받은 피드백은 train과 test간 어체의 불일치였습니다. 따라서 멘토님은 다음과 같은 피드백을 주셨습니다.
-- 이전에 만든 영어 데이터를 한국어로 번역할 때 문어체, 구어체, 번역체를 반영할 것.
-- 기존 한국어 데이터에서 topic을 기준으로 가장 많은 비중을 차지하는 것들을 선별하고 그에 대한 샘플들을 뽑아 fewshot으로 제공.
-- 이를 기반으로 dialogue를 입력해 summary를 생성 또는 summary를 입력해 dialogue를 생성하면서 다양한 어체를 반영하도록 프롬프트 엔지니어링.
-
-데이터는 SoLA보다 Gpt4가 더 좋은 퀄리티로 생성할 수 있었습니다. 다만 멘토링을 받은 시점이 월요일 밤이었기 때문에 사실상 학습할 수 있는 기간은 화요일 하루 뿐이었고, 7시 이전까지 열심히 학습했지만 데이터 양이 증가했기도 하고 기본적인 모델 학습 시간도 길었기 때문에 3epoch 정도만 학습했습니다.
-
-결과적으로 점수 향상은 이루어지지 못했으나, 길게 학습했다면 유의미한 성과를 보였을 것 같습니다.
 
 # 6.후기
 

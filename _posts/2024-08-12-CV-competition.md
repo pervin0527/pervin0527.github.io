@@ -1,6 +1,6 @@
 ---
 layout: single
-title: "AiLab 3기 - 문서 이미지 분류 경진대회"
+title: "[Upstage Ai-Lab]Document Type Classification"
 categories: Competition
 tag: [Deep-Learning, ComputerVision, Competition]
 use_math: true

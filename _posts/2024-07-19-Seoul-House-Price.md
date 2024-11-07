@@ -1,7 +1,7 @@
 ---
 layout: single
-title: "Seoul House Price Regression"
-categories: Machine-Learning
+title: "[Upstage Ai-Lab]Seoul House Price Regression"
+categories: Competition
 tag: [Machine-Learning, Competition]
 use_math: true
 ---
